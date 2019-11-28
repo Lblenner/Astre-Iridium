@@ -1,6 +1,14 @@
+import javax.activation.DataHandler;
+import javax.activation.DataSource;
+import javax.activation.FileDataSource;
 import javax.mail.*;
 import javax.mail.internet.InternetAddress;
+import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
+import javax.mail.internet.MimeMultipart;
+
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Properties;
 
 public class SendMail {
@@ -14,7 +22,7 @@ public class SendMail {
         prop.put("mail.smtp.starttls.enable", "true"); //TLS
     }
 
-    public void send(String username, String mdp,String dest,String sujet,String msg){
+    public void send(String username, String mdp,String dest,String sujet,String msg,String atcm){
 
         Session session = Session.getInstance(prop,
                 new javax.mail.Authenticator() {
@@ -32,10 +40,27 @@ public class SendMail {
             );
             message.setSubject(sujet);
             message.setText(msg);
+            
+            MimeBodyPart messageBodyPart = new MimeBodyPart();
 
+            Multipart multipart = new MimeMultipart();
+
+            messageBodyPart = new MimeBodyPart();
+            String file = atcm;
+            String[] fileStrs = file.split("\\\\");            
+            String fileName = fileStrs[fileStrs.length-1];
+            DataSource source = new FileDataSource(file);
+            messageBodyPart.setDataHandler(new DataHandler(source));
+            messageBodyPart.setFileName(fileName);
+            multipart.addBodyPart(messageBodyPart);
+
+            message.setContent(multipart);
+
+            System.out.println("Sending");
+            
             Transport.send(message);
 
-            System.out.println("Succés");
+            System.out.println("Success");
 
         } catch (AuthenticationFailedException e) {
             System.out.println("Authentification échoué");

@@ -10,6 +10,7 @@ public class MainProcess {
     private String username;
     private String mdp;
     private String dest;
+    private String addrSender;
     Scanner scan = new Scanner(System.in);
 
     public MainProcess(){
@@ -25,13 +26,17 @@ public class MainProcess {
 
         while(true) {
             System.out.print("Entrez votre adresse gmail: ");
-            username = scan.next();
+            //username = scan.next();
+            username = "louis.blenner@gmail.com";
             System.out.print("Entrez votre mot de passe application : ");
             mdp = scan.next();
-
+            System.out.print("Entrez l'adresse de l'envoyeur : ");
+            //addrSender = scan.next();
+            addrSender = "louis.blenner@gmail.com";
+            
             ReadEmail reader = new ReadEmail(username);
 
-            reader.read(username,mdp);
+            reader.read(username,mdp,addrSender);
 
             System.out.print("Adresse destination : ");
             dest = scan.next();
@@ -39,11 +44,13 @@ public class MainProcess {
             String suj = scan.next();
             System.out.print("Message : ");
             String msg = scan.next();
-
+            System.out.print("Attachment (file path) : ");
+            String atcm = scan.next();
+            
             SendMail sender = new SendMail();
-            sender.send(username,mdp,dest,suj,msg);
+            sender.send(username,mdp,dest,suj,msg,atcm);
 
-            System.out.println("Succés");
+            System.out.println("Success");
 
         }
     }

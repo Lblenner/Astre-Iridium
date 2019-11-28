@@ -1,7 +1,10 @@
 import javax.mail.*;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeMultipart;
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.util.Properties;
 
 public class ReadEmail {
@@ -12,14 +15,14 @@ public class ReadEmail {
         props = new Properties();
         props.put("mail.pop3.socketFactory.class", "javax.net.ssl.SSLSocketFactory");
         props.put("mail.pop3.socketFactory.fallback", "false");
-        props.put("mail.pop3.socketFactory.port", "995");
-        props.put("mail.pop3.port", "995");
+        props.put("mail.pop3.socketFactory.port", "993");
+        props.put("mail.pop3.port", "993");
         props.put("mail.pop3.host", "pop.gmail.com");
         props.put("mail.pop3.user", username);
         props.put("mail.store.protocol", "imaps");
     }
 
-    public void read(String username,String mdp){
+    public void read(String username,String mdp,String addrSender){
 
         // 2. Creates a javax.mail.Authenticator object.
         Authenticator auth = new Authenticator() {
@@ -35,16 +38,20 @@ public class ReadEmail {
         try {
             // 4. Get the POP3 store provider and connect to the store.
             Store store = session.getStore("imaps");
-            store.connect("pop.gmail.com", "louis.blenner@gmail.com", mdp);
+            store.connect("pop.gmail.com", username, mdp);
 
-            /* Affiche les folder dispo sur la boite
+            // Affiche les folder dispo sur la boite
             Folder[] f = store.getFolder("[Gmail]").list();
-            for(Folder fd:f)
-                System.out.println(">> "+fd.getName());
-            */
+
+            //for(Folder fd:f)
+            //    System.out.println(">> "+fd.getName());
 
             // 5. Get folder and open the INBOX folder in the store.
-            Folder inbox = store.getFolder("[Gmail]/Tous les messages");
+
+            //Folder Tous les messages (le nom peu changer en fonction de la langue)
+            String folderName = f[f.length-1].getName();
+            System.out.println("Nom du folder de recherche >> " + folderName);
+            Folder inbox = store.getFolder("[Gmail]/"+folderName);
             inbox.open(Folder.READ_ONLY);
 
             // 6. Retrieve the messages from the folder.
@@ -57,7 +64,8 @@ public class ReadEmail {
                 Address[] froms = messages[i].getFrom();
                 String emailaddr = froms == null ? null : ((InternetAddress) froms[0]).getAddress();
 
-                if (emailaddr.equals("louis.blenner@gmail.com")){
+                if (emailaddr.equals(addrSender)){
+                    //Message à lire
                     Message message = messages[i];
                     System.out.println(getTextFromMessage(message));
                     msgVu = true;
@@ -97,7 +105,25 @@ public class ReadEmail {
         int count = mimeMultipart.getCount();
         for (int i = 0; i < count; i++) {
             BodyPart bodyPart = mimeMultipart.getBodyPart(i);
-            if (bodyPart.isMimeType("text/plain")) {
+            //Si la partie est un fichier
+            if (Part.ATTACHMENT.equalsIgnoreCase(bodyPart.getDisposition())) {
+                System.out.println("Il y a une piece jointe : ");
+                System.out.println(bodyPart.getFileName());
+
+                InputStream stream =
+                        (InputStream) bodyPart.getInputStream();
+
+                System.out.println(stream.read());
+                /*
+                BufferedReader bufferedReader =
+                        new BufferedReader(new InputStreamReader(stream));
+                while (bufferedReader.ready()) {
+                    System.out.println(bufferedReader.readLine());
+                }
+                */
+
+            }
+            else if (bodyPart.isMimeType("text/plain")) {
                 result = result + "\n" + bodyPart.getContent();
                 break; // without break same text appears twice in my tests
             } else if (bodyPart.getContent() instanceof MimeMultipart) {
