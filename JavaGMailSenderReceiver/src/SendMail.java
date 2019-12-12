@@ -1,14 +1,12 @@
-import javax.activation.DataHandler;
-import javax.activation.DataSource;
-import javax.activation.FileDataSource;
 import javax.mail.*;
 import javax.mail.internet.InternetAddress;
 import javax.mail.internet.MimeBodyPart;
 import javax.mail.internet.MimeMessage;
 import javax.mail.internet.MimeMultipart;
-
-import java.util.ArrayList;
-import java.util.List;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.PrintWriter;
 import java.util.Properties;
 
 public class SendMail {
@@ -22,7 +20,7 @@ public class SendMail {
         prop.put("mail.smtp.starttls.enable", "true"); //TLS
     }
 
-    public void send(String username, String mdp,String dest,String sujet,String msg,String atcm){
+    public void send(String username, String mdp, String dest, String sujet, String msg, byte[] atcm){
 
         Session session = Session.getInstance(prop,
                 new javax.mail.Authenticator() {
@@ -32,6 +30,7 @@ public class SendMail {
                 });
 
         try {
+
             Message message = new MimeMessage(session);
             message.setFrom(new InternetAddress(username));
             message.setRecipients(
@@ -40,32 +39,30 @@ public class SendMail {
             );
             message.setSubject(sujet);
             message.setText(msg);
-            
-            MimeBodyPart messageBodyPart = new MimeBodyPart();
+
+
 
             Multipart multipart = new MimeMultipart();
+            MimeBodyPart messageBodyPart = new MimeBodyPart();
 
-            messageBodyPart = new MimeBodyPart();
-            String file = atcm;
-            String[] fileStrs = file.split("\\\\");            
-            String fileName = fileStrs[fileStrs.length-1];
-            DataSource source = new FileDataSource(file);
-            messageBodyPart.setDataHandler(new DataHandler(source));
-            messageBodyPart.setFileName(fileName);
+            File file = new File("Attach");
+
+            //PrintWriter writer = new PrintWriter(file, UTF-8);
+            //writer.println(atcm); //Ici une string
+            FileOutputStream writer = new FileOutputStream("Attach");
+            writer.write(atcm);
+            writer.close();
+
+            messageBodyPart.setFileName("titre");
+            messageBodyPart.attachFile(file);
             multipart.addBodyPart(messageBodyPart);
 
             message.setContent(multipart);
-
-            System.out.println("Sending");
             
             Transport.send(message);
 
-            System.out.println("Success");
-
-        } catch (AuthenticationFailedException e) {
-            System.out.println("Authentification échoué");
-        } catch (MessagingException e) {
-            e.printStackTrace();
+        } catch (Exception e) {
+            System.out.println("Echec de l'envoie");
         }
     }
 }

@@ -22,7 +22,7 @@ public class ReadEmail {
         props.put("mail.store.protocol", "imaps");
     }
 
-    public void read(String username,String mdp,String addrSender){
+    public String read(String username,String mdp,String addrSender) throws PasDeMessage{
 
         // 2. Creates a javax.mail.Authenticator object.
         Authenticator auth = new Authenticator() {
@@ -67,15 +67,15 @@ public class ReadEmail {
                 if (emailaddr.equals(addrSender)){
                     //Message à lire
                     Message message = messages[i];
-                    System.out.println(getTextFromMessage(message));
                     msgVu = true;
+
+                    // 7. Close folder and close store.
+                    inbox.close(false);
+                    store.close();
+                    return getTextFromMessage(message);
                 }
                 i--;
             }
-            if (msgVu = false){
-                System.out.println("Expediteur non trouvé");
-            }
-
 
             // 7. Close folder and close store.
             inbox.close(false);
@@ -86,6 +86,10 @@ public class ReadEmail {
         } catch(Exception e) {
             e.printStackTrace();
         }
+
+
+        System.out.println("Expediteur non trouvé");
+        throw(new PasDeMessage());
     }
 
     private String getTextFromMessage(Message message) throws MessagingException, IOException {
@@ -113,7 +117,9 @@ public class ReadEmail {
                 InputStream stream =
                         (InputStream) bodyPart.getInputStream();
 
-                System.out.println(stream.read());
+                int r = stream.read();
+
+                return(Integer.toString(r));
                 /*
                 BufferedReader bufferedReader =
                         new BufferedReader(new InputStreamReader(stream));
