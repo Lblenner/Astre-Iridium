@@ -1,6 +1,5 @@
 import java.io.InputStream;
 import java.net.*;
-import java.util.ArrayList;
 import java.util.Scanner;
 
 public class ServeurEnvoie {
@@ -41,7 +40,7 @@ public class ServeurEnvoie {
     public void routine() {
 
         while(true) {
-            //String msg = "";
+            String msg = "";
             int len;
             byte[] tab = null;
 
@@ -49,28 +48,27 @@ public class ServeurEnvoie {
 
                 boolean msgLu = false;
 
-                if ((len =in.available()) != 0) {
-                    tab = new byte[len];
+                while ((len =in.available()) != 0) {
+                    //tab = new byte[len];
                     msgLu = true;
-                    in.read(tab,0,len);
-                    /*String hex =  Integer.toHexString(data);
+                    //in.read(tab,0,len);
+                    int data = in.read();
+                    String hex =  Integer.toHexString(data);
                     if (hex.length() == 1){
                         hex = "0"+hex;
                     }
                     System.out.println("Bytes available : " + data + "/" + hex);
-                    msg += hex;*/
+                    msg += hex;
 
 
                 }
 
                 if (msgLu) {
 
-                    //msg = msg.toUpperCase();
+                    msg = msg.toUpperCase();
                     SendMail sender = new SendMail();
-                    sender.send(username, mdp, dest, "Astre", "", tab);
-                    System.out.println("Success : " );
-                    //180AC013000519110100B831
-                    //213F001300C1 180AC01 6 000519110100 C19614BD
+                    sender.send(username, mdp, dest, "Astre", "", msg);
+                    System.out.println("Success : " + msg );
                 }
 
             } catch (Exception e) {

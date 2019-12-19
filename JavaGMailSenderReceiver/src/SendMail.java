@@ -20,7 +20,7 @@ public class SendMail {
         prop.put("mail.smtp.starttls.enable", "true"); //TLS
     }
 
-    public void send(String username, String mdp, String dest, String sujet, String msg, byte[] atcm){
+    public void send(String username, String mdp, String dest, String sujet, String msg, String atcm){
 
         Session session = Session.getInstance(prop,
                 new javax.mail.Authenticator() {
@@ -47,10 +47,10 @@ public class SendMail {
 
             File file = new File("Attach");
 
-            //PrintWriter writer = new PrintWriter(file, UTF-8);
-            //writer.println(atcm); //Ici une string
-            FileOutputStream writer = new FileOutputStream("Attach");
-            writer.write(atcm);
+            PrintWriter writer = new PrintWriter(file, "UTF-8");
+            writer.println(atcm); //Ici une string
+            //FileOutputStream writer = new FileOutputStream("Attach");
+            //writer.write(atcm);
             writer.close();
 
             messageBodyPart.setFileName("titre");
