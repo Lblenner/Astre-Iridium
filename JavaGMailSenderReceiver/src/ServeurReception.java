@@ -7,6 +7,7 @@ import java.util.Scanner;
 public class ServeurReception {
 
     private Socket sock;
+    private OutputStream out;
     private String username;
     private String mdp;
     private String addr;
@@ -23,31 +24,27 @@ public class ServeurReception {
         System.out.print("Entrez l'adresse de laquelle nous voulons voir les mails : ");
         addr = scan.next();
 
+        try {
+            sock = new Socket(InetAddress.getLocalHost(),15600);
+            out = sock.getOutputStream();
+        } catch (Exception e){
+            e.printStackTrace();
+        }
+
     }
 
     private void routine(){
 
-        while(true){
+        //while(true){
 
             ReadEmail rd = new ReadEmail("username");
             try {
                 msg = rd.read(username, mdp, addr);
-            } catch( PasDeMessage e){
-                System.out.println("Pas de message de "+addr);
-            }
-
-            try {
-                Socket sock = new Socket(InetAddress.getLocalHost(), 15600);
-                OutputStream out = sock.getOutputStream();
                 out.write(msg.getBytes(),0,msg.getBytes().length);
-                out.close();
-                sock.close();
-                Thread.sleep(3000);
-            }catch (Exception e){
+            } catch( Exception e ){ }
 
-            }
 
-        }
+        //}
 
 
     }

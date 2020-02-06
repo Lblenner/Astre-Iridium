@@ -6,10 +6,12 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.util.Properties;
+import java.util.Scanner;
 
 public class ReadEmail {
 
     Properties props;
+    String ret;
 
     public ReadEmail(String username){
         props = new Properties();
@@ -23,6 +25,8 @@ public class ReadEmail {
     }
 
     public String read(String username,String mdp,String addrSender) throws PasDeMessage{
+
+        ret = null;
 
         // 2. Creates a javax.mail.Authenticator object.
         Authenticator auth = new Authenticator() {
@@ -40,15 +44,13 @@ public class ReadEmail {
             Store store = session.getStore("imaps");
             store.connect("pop.gmail.com", username, mdp);
 
-            // Affiche les folder dispo sur la boite
             Folder[] f = store.getFolder("[Gmail]").list();
 
+            // Affiche les folder dispo sur la boite
             //for(Folder fd:f)
             //    System.out.println(">> "+fd.getName());
 
-            // 5. Get folder and open the INBOX folder in the store.
-
-            //Folder Tous les messages (le nom peu changer en fonction de la langue)
+            // 5. Get folder..
             String folderName = f[f.length-1].getName();
             System.out.println("Nom du folder de recherche >> " + folderName);
             Folder inbox = store.getFolder("[Gmail]/"+folderName);
@@ -59,8 +61,9 @@ public class ReadEmail {
 
             int i = messages.length-1;
             boolean msgVu = false;
+
             while (i >= 0 && !msgVu){
-                //recuperation de l'expediteur
+
                 Address[] froms = messages[i].getFrom();
                 String emailaddr = froms == null ? null : ((InternetAddress) froms[0]).getAddress();
 
@@ -69,12 +72,11 @@ public class ReadEmail {
                     Message message = messages[i];
                     msgVu = true;
 
-                    // 7. Close folder and close store.
-                    inbox.close(false);
-                    store.close();
-                    return getTextFromMessage(message);
+                    ret = getTextFromMessage(message);
+
                 }
                 i--;
+
             }
 
             // 7. Close folder and close store.
@@ -87,9 +89,13 @@ public class ReadEmail {
             e.printStackTrace();
         }
 
+        if (ret == null) {
+            System.out.println("Expediteur non trouvé");
+            throw (new PasDeMessage());
+        } else {
+            return ret;
+        }
 
-        System.out.println("Expediteur non trouvé");
-        throw(new PasDeMessage());
     }
 
     private String getTextFromMessage(Message message) throws MessagingException, IOException {
@@ -111,22 +117,18 @@ public class ReadEmail {
             BodyPart bodyPart = mimeMultipart.getBodyPart(i);
             //Si la partie est un fichier
             if (Part.ATTACHMENT.equalsIgnoreCase(bodyPart.getDisposition())) {
-                System.out.println("Il y a une piece jointe : ");
+                System.out.print("Il y a une piece jointe : ");
                 System.out.println(bodyPart.getFileName());
 
                 InputStream stream =
                         (InputStream) bodyPart.getInputStream();
 
-                int r = stream.read();
+                BufferedReader fr = new BufferedReader( new InputStreamReader(stream) );
 
-                return(Integer.toString(r));
-                /*
-                BufferedReader bufferedReader =
-                        new BufferedReader(new InputStreamReader(stream));
-                while (bufferedReader.ready()) {
-                    System.out.println(bufferedReader.readLine());
+                String line = "";
+                while((line = fr.readLine()) != null) {
+                    result = result + line;
                 }
-                */
 
             }
             else if (bodyPart.isMimeType("text/plain")) {
@@ -137,6 +139,25 @@ public class ReadEmail {
             }
         }
         return result;
+    }
+
+    public static void main (String[] args) {
+
+        Scanner scan = new Scanner(System.in);
+        //Parametre pour le reçue du Mail
+        //System.out.print("Entrez votre adresse gmail: ");
+        String username = "louis.blenner@gmail.com"; //scan.next();
+        System.out.print("Entrez votre mot de passe application : ");
+        String mdp = scan.next();
+        //System.out.print("Entrez l'adresse de la cible : ");
+        String addrSender = "louis.blenner@gmail.com"; //scan.next();
+
+        ReadEmail reader = new ReadEmail(username);
+        try {
+            reader.read(username, mdp, addrSender);
+        } catch (PasDeMessage e){
+            e.printStackTrace();
+        }
     }
 }
 

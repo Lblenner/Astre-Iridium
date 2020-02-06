@@ -8,6 +8,7 @@ import java.io.FileOutputStream;
 import java.io.InputStream;
 import java.io.PrintWriter;
 import java.util.Properties;
+import java.util.Scanner;
 
 public class SendMail {
 
@@ -65,4 +66,21 @@ public class SendMail {
             System.out.println("Echec de l'envoie");
         }
     }
+
+    public static void main (String[] args) {
+
+        Scanner scan = new Scanner(System.in);
+        //Parametre pour l'envoie de Mail
+        //System.out.print("Entrez votre adresse gmail: ");
+        String username = "louis.blenner@gmail.com"; //scan.next();
+        System.out.print("Entrez votre mot de passe application : ");
+        String mdp = scan.next();
+        //System.out.print("Entrez l'adresse de la cible : ");
+        String dest = "louis.blenner@gmail.com"; //scan.next();
+
+        SendMail sender = new SendMail();
+        sender.send(username, mdp, dest, "Astre", "", "hey");
+    }
+
+
 }
